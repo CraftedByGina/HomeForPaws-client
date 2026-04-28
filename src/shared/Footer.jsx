@@ -1,0 +1,46 @@
+import { Link } from 'react-router'
+
+const Footer = () => {
+  return (
+    <footer className="bg-[#edecea] pt-14 pb-9">
+      <div className="w-[min(1500px,calc(100%-96px))] mx-auto flex items-start justify-between gap-12 flex-wrap">
+        <div className="flex-[1_1_280px] min-w-[220px]">
+          <div className="flex items-center gap-2.5 font-serif text-[22px] font-bold text-[#2f3034]">
+            <img className="w-[26px]" src="/icons/paw.svg" alt="" />
+            <span>The Perfect Paw</span>
+          </div>
+          <p className="mt-4 max-w-[340px] text-[#7a7b80] text-[15px] leading-[1.6]">
+            Connecting loving families with dogs and cats in need since 2026.
+          </p>
+        </div>
+
+        <nav className="flex gap-14 flex-[2_1_560px] justify-end flex-wrap" aria-label="Footer">
+          <div className="min-w-[130px]">
+            <h3 className="m-0 text-[13px] uppercase tracking-widest text-[#0F2A44] font-semibold">Adopt</h3>
+            <Link to="/pets" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">View Adoptable Pets</Link>
+            <a href="#" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Adoption Course</a>
+            <a href="#" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Application</a>
+          </div>
+          <div className="min-w-[130px]">
+            <h3 className="m-0 text-[13px] uppercase tracking-widest text-[#0F2A44] font-semibold">Get Involved</h3>
+            <a href="#" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Volunteer</a>
+            <a href="#" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Foster</a>
+            <a href="#" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Donate</a>
+          </div>
+          <div className="min-w-[130px]">
+            <h3 className="m-0 text-[13px] uppercase tracking-widest text-[#0F2A44] font-semibold">Contact</h3>
+            <a href="mailto:info@theperfectpaw.org" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">info@theperfectpaw.org</a>
+            <a href="tel:+15551234567" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">(555) 123-4567</a>
+            <span className="block mt-3 text-[#7a7b80] text-[15px] leading-snug">123 Rescue Lane</span>
+          </div>
+        </nav>
+      </div>
+
+      <div className="w-[min(1500px,calc(100%-96px))] h-px bg-[#d4d4d6] mt-10 mx-auto" aria-hidden="true"></div>
+      <p className="mt-6 text-center text-[#7a7b80] text-[13px]">© 2026 CraftedByGina. All rights reserved.</p>
+    </footer>
+  )
+}
+
+export default Footer
+
