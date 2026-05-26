@@ -96,7 +96,7 @@ const Home = () => {
           </p>
           <div className="absolute right-5 top-1/2 flex -translate-y-1/2 flex-col items-center " aria-label="Rescue partner badges">
             <img
-              className="translate-y-6 h-[110px] w-[110px] object-contain"
+              className="translate-y-10 h-[120px] w-[120px] object-contain"
               src="/images/LDR.png"
               alt="Lucky Dog Refuge logo"
             />
@@ -146,9 +146,12 @@ const Home = () => {
             course on responsible pet ownership. It ensures our dogs and cats go to prepared,
             forever homes.
           </p>
-          <button className="mt-7 self-start rounded-lg border-2 border-[rgba(255,255,255,0.5)] bg-transparent px-[22px] py-[9px] text-base font-semibold text-white cursor-pointer hover:bg-white hover:text-[#2e5f8a] transition-colors">
+          <Link
+            to="/course"
+            className="mt-7 self-start rounded-lg border-2 border-[rgba(255,255,255,0.5)] bg-transparent px-[22px] py-[9px] text-base font-semibold text-white cursor-pointer hover:bg-white hover:text-[#2e5f8a] transition-colors no-underline"
+          >
             Start Course Now
-          </button>
+          </Link>
         </div>
         <div className="flex-[0_1_40%] min-h-[320px] max-lg:min-h-[240px]" aria-hidden="true">
           <DotLottieReact

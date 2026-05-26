@@ -38,7 +38,7 @@ export const AGE_GROUPS = [
   'Senior (8+ yrs)',
 ]
 
-export const SIZES = ['Small', 'Medium', 'Large', 'X-Large']
+export const SIZES = ['Small', 'Medium', 'Large']
 
 export const AGE_GROUP_MAP = {
   'Puppy (< 1 yr)': 'Puppy',

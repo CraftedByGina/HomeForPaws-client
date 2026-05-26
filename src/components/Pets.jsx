@@ -1,23 +1,98 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
-import { ALL_PETS, AGE_GROUPS, SIZES, AGE_GROUP_MAP } from '../data/pets.js'
+import { AGE_GROUPS, SIZES, AGE_GROUP_MAP } from '../data/pets.js'
+import { getPets } from '../services/petsService.js'
+import { submitApplication } from '../services/applicationsService.js'
+import { useAuth } from '../context/AuthContext.jsx'
 
+const getPetId = (pet) => pet.id || pet._id || pet.petId || pet.name
+const getPetName = (pet) => pet.name || 'Unnamed Pet'
+const getPetImage = (pet) => pet.img || pet.image || pet.imageUrl || '/images/dog.png'
+const getPetTraits = (pet) => pet.traits || pet.tags || []
+const getPetSex = (pet) => pet.sex || pet.gender || 'Unknown'
+const getPetAge = (pet) => Number(pet.age || 0)
+const getPetAgeGroup = (pet) => pet.ageGroup || 'Adult'
+const getPetSize = (pet) => pet.size || 'Medium'
 
 const Pets = () => {
+  const { userId } = useAuth()
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [ages, setAges] = useState([])
   const [sizes, setSizes] = useState([])
+  const [pets, setPets] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  const [submittingPetId, setSubmittingPetId] = useState('')
+
+  useEffect(() => {
+    const loadPets = async () => {
+      setLoading(true)
+      setError('')
+
+      try {
+        const data = await getPets()
+        setPets(Array.isArray(data) ? data : data?.pets || [])
+      } catch (err) {
+        setError(err.message || 'Could not load pets right now.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadPets()
+  }, [])
 
   const toggleFilter = (list, setList, value) => {
     setList(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value])
   }
 
-  const filtered = ALL_PETS.filter(pet => {
-    const matchesSearch = pet.name.toLowerCase().includes(search.toLowerCase())
-    const matchesAge = ages.length === 0 || ages.some(a => AGE_GROUP_MAP[a] === pet.ageGroup)
-    const matchesSize = sizes.length === 0 || sizes.includes(pet.size)
+  const filtered = useMemo(() => pets.filter(pet => {
+    const name = getPetName(pet)
+    const ageGroup = getPetAgeGroup(pet)
+    const size = getPetSize(pet)
+
+    const matchesSearch = name.toLowerCase().includes(search.toLowerCase())
+    const matchesAge = ages.length === 0 || ages.some(a => AGE_GROUP_MAP[a] === ageGroup)
+    const matchesSize = sizes.length === 0 || sizes.includes(size)
     return matchesSearch && matchesAge && matchesSize
-  })
+  }), [pets, search, ages, sizes])
+
+  const handleApply = async (pet) => {
+    const petId = getPetId(pet)
+    const petName = getPetName(pet)
+
+    if (!userId) {
+      setNotice('Please enter a user id in the header before submitting an application.')
+      return
+    }
+
+    setSubmittingPetId(petId)
+    setNotice('')
+
+    try {
+      const response = await submitApplication({
+        petId,
+        message: `Hi! I am interested in adopting ${petName}.`,
+        userId,
+      })
+
+      const applicationId = response?.data?._id || response?.data?.id
+
+      if (applicationId) {
+        navigate(`/course?applicationId=${applicationId}`)
+        return
+      }
+
+      setNotice(`Application sent for ${petName}.`) 
+    } catch (err) {
+      setNotice(err.message || 'Could not submit application.')
+    } finally {
+      setSubmittingPetId('')
+    }
+  }
 
   return (
     <>
@@ -111,35 +186,54 @@ const Pets = () => {
 
           {/* Pet cards */}
           <section className="flex-1 flex flex-wrap gap-7 pt-1" aria-label="Pets list">
-            {filtered.length === 0 && (
+            {loading && <p className="text-[#67686d] text-lg">Loading pets...</p>}
+            {!loading && error && <p className="text-[#b42318] text-lg">{error}</p>}
+            {!userId && !loading && !error && (
+              <p className="w-full rounded-lg border border-[#f3d3a6] bg-[#fff7eb] p-3 text-[#7a5208] text-sm">
+                You are not logged in. Add your user id in the header so we can send x-user-id.
+              </p>
+            )}
+            {notice && (
+              <p className="w-full rounded-lg border border-[#d7d7d9] bg-white p-3 text-[#2f3034] text-sm">
+                {notice}
+              </p>
+            )}
+            {!loading && !error && filtered.length === 0 && (
               <p className="text-[#67686d] text-lg">No pets match your filters.</p>
             )}
             {filtered.map((pet, i) => (
               <article
-                key={pet.name}
+                key={getPetId(pet)}
                 className="pet-card flex-[1_1_320px] max-w-[420px] bg-[#f6f6f7] border border-[#d7d7d9] rounded-[14px] overflow-hidden shadow-[0_8px_16px_rgba(0,0,0,0.06)]"
                 style={{ animation: `fadeUp 0.5s ${i * 0.1}s ease both` }}
               >
                 <div className="h-[260px] overflow-hidden">
-                  <img className="pet-card-img w-full h-full object-cover block" src={pet.img} alt={`Photo of ${pet.name}`} />
+                  <img className="pet-card-img w-full h-full object-cover block" src={getPetImage(pet)} alt={`Photo of ${getPetName(pet)}`} />
                 </div>
                 <div className="p-[18px_18px_20px] bg-[#f6f6f7]">
                   <div className="flex items-baseline justify-between gap-3.5">
-                    <h3 className="m-0 font-serif text-[34px] tracking-[-0.01em] text-[#0F2A44]">{pet.name}</h3>
-                    <p className="m-0 text-[#6c6d72] text-lg">{pet.sex}, {pet.age} yr{pet.age !== 1 ? 's' : ''}</p>
+                    <h3 className="m-0 font-serif text-[34px] tracking-[-0.01em] text-[#0F2A44]">{getPetName(pet)}</h3>
+                    <p className="m-0 text-[#6c6d72] text-lg">
+                      {getPetSex(pet)}, {getPetAge(pet)} yr{getPetAge(pet) !== 1 ? 's' : ''}
+                    </p>
                     {pet.blurb && <p className="mt-2 mb-0 text-[#888] text-sm italic leading-snug">{pet.blurb}</p>}
                   </div>
                   <div className="flex gap-2.5 flex-wrap mt-3.5 mb-[18px]" aria-label="Traits">
-                    {pet.traits.map((t, ti) => (
+                    {getPetTraits(pet).map((t, ti) => (
                       <span key={t} className="animate-tag-pop px-2.5 py-[7px] rounded-lg bg-[#ededee] text-[#6c6d72] text-sm" style={{ animationDelay: `${0.1 + ti * 0.07}s` }}>{t}</span>
                     ))}
                   </div>
-                  <a
-                    href="#"
+                  <p className="mb-3 mt-0 text-sm text-[#6c6d72]">Course status: Course pending</p>
+                  <button
+                    type="button"
+                    onClick={() => handleApply(pet)}
+                    disabled={submittingPetId === getPetId(pet)}
                     className="block w-full text-center rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] text-[#2f3034] py-[10px] text-base font-semibold no-underline"
                   >
-                    I want to meet {pet.name}!
-                  </a>
+                    {submittingPetId === getPetId(pet)
+                      ? 'Sending...'
+                      : `I'm interested in ${getPetName(pet)}!`}
+                  </button>
                 </div>
               </article>
             ))}
