@@ -1,7 +1,34 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useAuth } from '../context/AuthContext.jsx'
-import { submitCourseQuiz } from '../services/applicationsService.js'
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+
+const readApiError = async (response) => {
+	try {
+		const data = await response.json()
+		return data?.message || `Request failed with status ${response.status}`
+	} catch {
+		return `Request failed with status ${response.status}`
+	}
+}
+
+const submitCourseQuiz = async ({ applicationId, userId, answers }) => {
+	const response = await fetch(`${API_BASE_URL}/api/applications/${applicationId}/course`, {
+		method: 'PATCH',
+		headers: {
+			'Content-Type': 'application/json',
+			'x-user-id': userId,
+		},
+		body: JSON.stringify({ answers }),
+	})
+
+	if (!response.ok) {
+		throw new Error(await readApiError(response))
+	}
+
+	return response.json()
+}
 
 const COURSE_PAGES = [
 	{

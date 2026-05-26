@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState } from 'react'
 
 const AuthContext = createContext(null)
-const STORAGE_KEY = 'homeforpaws_user_id'
+const STORAGE_KEY = 'perfectpaw_user_id'
 
 export const AuthProvider = ({ children }) => {
   const [userId, setUserIdState] = useState(() => localStorage.getItem(STORAGE_KEY) || '')

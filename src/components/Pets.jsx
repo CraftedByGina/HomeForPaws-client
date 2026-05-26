@@ -2,9 +2,45 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import { AGE_GROUPS, SIZES, AGE_GROUP_MAP } from '../data/pets.js'
-import { getPets } from '../services/petsService.js'
-import { submitApplication } from '../services/applicationsService.js'
 import { useAuth } from '../context/AuthContext.jsx'
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+
+const readApiError = async (response) => {
+  try {
+    const data = await response.json()
+    return data?.message || `Request failed with status ${response.status}`
+  } catch {
+    return `Request failed with status ${response.status}`
+  }
+}
+
+const fetchPets = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/pets`)
+  if (!response.ok) {
+    throw new Error(await readApiError(response))
+  }
+
+  const data = await response.json()
+  return Array.isArray(data) ? data : data?.pets || data?.data || []
+}
+
+const createApplication = async ({ petId, message, userId }) => {
+  const response = await fetch(`${API_BASE_URL}/api/applications`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-user-id': userId,
+    },
+    body: JSON.stringify({ petId, message }),
+  })
+
+  if (!response.ok) {
+    throw new Error(await readApiError(response))
+  }
+
+  return response.json()
+}
 
 const getPetId = (pet) => pet.id || pet._id || pet.petId || pet.name
 const getPetName = (pet) => pet.name || 'Unnamed Pet'
@@ -33,8 +69,8 @@ const Pets = () => {
       setError('')
 
       try {
-        const data = await getPets()
-        setPets(Array.isArray(data) ? data : data?.pets || [])
+        const data = await fetchPets()
+        setPets(data)
       } catch (err) {
         setError(err.message || 'Could not load pets right now.')
       } finally {
@@ -73,7 +109,7 @@ const Pets = () => {
     setNotice('')
 
     try {
-      const response = await submitApplication({
+      const response = await createApplication({
         petId,
         message: `Hi! I am interested in adopting ${petName}.`,
         userId,
